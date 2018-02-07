@@ -7,13 +7,14 @@ from Crypto.Cipher import AES
 import base64
 
 class Data():
-	def __init__(self):
+	def __init__(self, socket):
 		self.bs = 32
 		self.secret_key = "1234512345123451"
 		self.voltage = 0 
 		self.current = 0 
 		self.power = 0  #voltage * current
-		self.cumpower=0 
+		self.cumpower=0
+		self.sock = socket
 
 	def pad(self, msg):
 		return msg + (self.bs - len(msg)%self.bs)*chr(self.bs - len(msg)%self.bs)
@@ -29,7 +30,7 @@ class Data():
 			+ "|" + str(self.current) + "|" + str(self.power) + "|" + str(self.cumpower) + "|")
 		print(formattedAnswer)
 		encryptedText = self.encryptText(formattedAnswer, self.secret_key)
-		self.s.send(encryptedText)
+		self.sock.send(encryptedText)
 
 class RaspberryPi():
 	def __init__(self):
@@ -52,6 +53,7 @@ class RaspberryPi():
 			#Connections
 			self.connectToServer()
 			print("Connected to test server")
+			data = Data(sock)
 
 			self.connectToArduino()
 
@@ -64,6 +66,7 @@ class RaspberryPi():
 			#Acknowledge the arduino back
 			self.serial_port.write("Ack")
 			print("Connected to Arduino")
+
 
 		except KeyboardInterrupt:
 			sys.exit(1)
