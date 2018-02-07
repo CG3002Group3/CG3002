@@ -6,3 +6,4 @@ To run the final_eval_server.py:
 3) Install Tkinter: sudo apt-get install python python3-tk
 4) Install pandas: pip3 install pandas
 5) Install pycrypto: pip3 install pycrypto
+6) Install pyserial: pip3 install pyserial
