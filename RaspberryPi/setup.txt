@@ -1,0 +1,8 @@
+To run the final_eval_server.py:
+
+1) Make sure you have python 3 on your machine.
+2) The format to run the python file is: > python3 final_eval_server.py ip_address port group_number
+   E.g. python3 final_eval_server.py localhost 8888 3
+3) Install Tkinter: sudo apt-get install python python3-tk
+4) Install pandas: pip3 install pandas
+5) Install pycrypto: pip3 install pycrypto
