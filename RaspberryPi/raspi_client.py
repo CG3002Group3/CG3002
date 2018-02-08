@@ -35,36 +35,36 @@ class Data():
 class RaspberryPi():
 	def __init__(self):
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.serial_port=serial.Serial("/dev/serial0", baudrate=115200) #For linux
-		self.serial_port=serial.Serial("/dev/serial0", baudrate=115200) #For the Rpi
+		self.serial_port=serial.Serial("/dev/ttyACM0", baudrate=115200) #For linux
+		# self.serial_port=serial.Serial("/dev/serial0", baudrate=115200) #For the Rpi
 
 	def connectToServer(self):
 		IPAddress = sys.argv[1]
-		Port = sys.argv[2]
+		Port = int(sys.argv[2])
 		server_address = (IPAddress, Port)
-		sock.connect(server_address)
+		self.sock.connect(server_address)
 
 	def connectToArduino(self):
-		serial_port.reset_input_buffer()
-		serial_port.reset_output_buffer()
+		self.serial_port.reset_input_buffer()
+		self.serial_port.reset_output_buffer()
 
 	def run(self):
 		try:
 			#Connections
 			self.connectToServer()
 			print("Connected to test server")
-			data = Data(sock)
+			data = Data(self.sock)
 
 			self.connectToArduino()
 
 			#Handshaking with Arduino
-			while(self.serial_port.in_waiting == 0 or self.serial_port.read() != "Ack"):
+			while(self.serial_port.in_waiting == 0 or self.serial_port.read() != 'A'):
 				print("connecting..")
-				self.serial_port.write("Hello!")
+				self.serial_port.write('H'.encode())
 				time.sleep(1)
 
 			#Acknowledge the arduino back
-			self.serial_port.write("Ack")
+			self.serial_port.write('A')
 			print("Connected to Arduino")
 
 
