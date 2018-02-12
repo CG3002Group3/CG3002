@@ -1,3 +1,18 @@
+#include <croutine.h>
+#include <event_groups.h>
+#include <FreeRTOSConfig.h>
+#include <FreeRTOSVariant.h>
+#include <list.h>
+#include <mpu_wrappers.h>
+#include <portable.h>
+#include <portmacro.h>
+#include <projdefs.h>
+#include <queue.h>
+#include <semphr.h>
+#include <StackMacros.h>
+#include <task.h>
+#include <timers.h>
+
 #include <Wire.h>
 
 #define MPU6050_PWR_MGMT_1         0x6B   // R/W
