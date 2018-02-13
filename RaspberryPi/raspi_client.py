@@ -6,6 +6,14 @@ import random
 from Crypto.Cipher import AES
 import base64
 
+def readlineCR(port): 
+	rv="" 
+	while True: 
+		ch=port.read() 
+		rv+=ch 
+		if ch=='\r' or ch =='': 
+			return rv
+
 class Data():
 	def __init__(self, socket):
 		self.bs = 32
@@ -35,8 +43,9 @@ class Data():
 class RaspberryPi():
 	def __init__(self):
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.serial_port=serial.Serial("/dev/ttyACM0", baudrate=115200) #For linux
+		self.serial_port= serial.Serial('/dev/ttyAMA0', baudrate=9600, timeout=3.0) #For linux
 		# self.serial_port=serial.Serial("/dev/serial0", baudrate=115200) #For the Rpi
+		self.test_counter = 0
 
 	def connectToServer(self):
 		IPAddress = sys.argv[1]
@@ -51,22 +60,36 @@ class RaspberryPi():
 	def run(self):
 		try:
 			#Connections
-			self.connectToServer()
-			print("Connected to test server")
-			data = Data(self.sock)
+			#self.connectToServer()
+			#print("Connected to test server")
+			#data = Data(self.sock)
 
 			self.connectToArduino()
 
 			#Handshaking with Arduino
 			while(self.serial_port.in_waiting == 0 or self.serial_port.read() != 'A'):
 				print("connecting..")
-				self.serial_port.write('H'.encode())
+				self.serial_port.write('H')
 				time.sleep(1)
 
 			#Acknowledge the arduino back
 			self.serial_port.write('A')
 			print("Connected to Arduino")
+			
+			#if no byte to read
+			#if(self.serial_port.in_waiting != 0 or self.serial_port.read() ):
+			#	print("Disconnected")
 
+			#Receive data from Arduino(periodically)
+			while(1):
+				if(self.serial_port.in_waiting != 0):
+					arduino_data = readlineCR(self.serial_port)
+					print(arduino_data)
+					self.test_counter += 1
+					line_to_send = "A" + str(self.test_counter)
+					print(line_to_send)
+					self.serial_port.write(line_to_send)
+					
 
 		except KeyboardInterrupt:
 			sys.exit(1)
