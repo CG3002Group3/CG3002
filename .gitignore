@@ -1,1 +1,2 @@
-.csv
+#don't include the generated log.csv
+*.csv
