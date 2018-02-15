@@ -75,7 +75,7 @@ SemaphoreHandle_t xSemaphore0 = xSemaphoreCreateMutex();
 //pos = pos % MAX_BUFFER_LENGTH;
 
 
-void task1(void *P){
+void output(void *P){
   TickType_t xLastWakeTime;
   xLastWakeTime = xTaskGetTickCount();
 
@@ -90,7 +90,7 @@ void task1(void *P){
   
 }
 
-void task2(void *P){
+void accelerometer(void *P){
   for(;;){
     int error;
     double dT;
@@ -185,11 +185,11 @@ void task2(void *P){
   }
 }
 
-void task3(void *P){
+void voltage(void *P){
 //voltage sensor reading
 }
 
-void task4(void *P){
+void current(void *P){
 //current sensor reading
 }
 
@@ -236,10 +236,10 @@ void setup() {
   MPU6050_write_reg (MPU6050_PWR_MGMT_1, 0);
   MPU6050_write_reg2 (MPU6050_PWR_MGMT_2, 0);
   
-  xTaskCreate(task1, "OUTPUT", STACK_SIZE, NULL, 4, NULL);
-  xTaskCreate(task2, "ACC_VEST", STACK_SIZE, NULL, 3, NULL);
-  xTaskCreate(task3, "VOLTAGE", STACK_SIZE, NULL, 2, NULL);
-  xTaskCreate(task4, "CURRENT_DRAWN", STACK_SIZE, NULL, 1, NULL);
+  xTaskCreate(output, "OUTPUT", STACK_SIZE, NULL, 4, NULL);
+  xTaskCreate(accelerometer, "ACCELEROMETER_VALUE", STACK_SIZE, NULL, 3, NULL);
+  xTaskCreate(voltage, "VOLTAGE", STACK_SIZE, NULL, 2, NULL);
+  xTaskCreate(current, "CURRENT_DRAWN", STACK_SIZE, NULL, 1, NULL);
   vTaskStartScheduler();
   
 }
