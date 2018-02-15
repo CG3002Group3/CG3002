@@ -2,7 +2,7 @@ import serial
 import socket
 import sys
 import time
-import random
+from Crypto import Random
 from Crypto.Cipher import AES
 import base64
 
@@ -90,6 +90,14 @@ class RaspberryPi():
 					print(line_to_send)
 					self.serial_port.write(line_to_send)
 					
+			#test communication with server.
+			while(True):
+				name = input("What is the dance move?")
+				data.voltage = 12
+				data.current = 1
+				data.power = 100
+				data.cumpower
+				data.sendData(name)
 
 		except KeyboardInterrupt:
 			sys.exit(1)
