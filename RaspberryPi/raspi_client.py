@@ -57,13 +57,13 @@ class RaspberryPi():
 
 			self.connectToArduino()
 
-			# #Handshaking with Arduino
+			#Handshaking with Arduino
 			while(self.serial_port.in_waiting == 0 or self.serial_port.read() != 'A'):
 				print("connecting..")
 				self.serial_port.write('H'.encode())
 				time.sleep(1)
 
-			# #Acknowledge the arduino back
+			#Acknowledge the arduino back
 			self.serial_port.write('A')
 			print("Connected to Arduino")
 
