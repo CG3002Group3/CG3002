@@ -2,7 +2,7 @@ import serial
 import socket
 import sys
 import time
-import random
+from Crypto import Random
 from Crypto.Cipher import AES
 import base64
 
@@ -57,15 +57,24 @@ class RaspberryPi():
 
 			self.connectToArduino()
 
-			#Handshaking with Arduino
+			# #Handshaking with Arduino
 			while(self.serial_port.in_waiting == 0 or self.serial_port.read() != 'A'):
 				print("connecting..")
 				self.serial_port.write('H'.encode())
 				time.sleep(1)
 
-			#Acknowledge the arduino back
+			# #Acknowledge the arduino back
 			self.serial_port.write('A')
 			print("Connected to Arduino")
+
+			#test communication with server.
+			while(True):
+				name = input("What is the dance move?")
+				data.voltage = 12
+				data.current = 1
+				data.power = 100
+				data.cumpower
+				data.sendData(name)
 
 
 		except KeyboardInterrupt:
