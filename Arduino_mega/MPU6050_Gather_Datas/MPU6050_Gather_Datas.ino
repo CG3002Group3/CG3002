@@ -17,11 +17,16 @@ MPU6050 accelgyro1(0x68);
 MPU6050 accelgyro2(0x69); // <-- use for AD0 high
 
 // Accel+Gyro1
-int16_t ax1, ay1, az1;
-int16_t gx1, gy1, gz1;
+int16_t ax1_i, ay1_i, az1_i;
+int16_t gx1_i, gy1_i, gz1_i;
+float ax1, ay1, az1;
+float gx1, gy1, gz1;
+
 // Accel+Gyro2
-int16_t ax2, ay2, az2;
-int16_t gx2, gy2, gz2;
+int16_t ax2_i, ay2_i, az2_i;
+float ax2, ay2, az2;
+int16_t gx2_i, gy2_i, gz2_i;
+float gx2, gy2, gz2;
 
 
 // uncomment "OUTPUT_READABLE_ACCELGYRO" if you want to see a tab-separated
@@ -48,8 +53,8 @@ void setup() {
     #endif
 
     // initialize serial communication
-    // (38400 chosen because it works as well at 8MHz as it does at 16MHz, but
-    // it's really up to you depending on your project)
+    // (38400 chosen because it works as well at 8MHz as it does at 16MHz
+    // Please check.
     Serial.begin(38400);
 
     // initialize device
@@ -65,23 +70,23 @@ void setup() {
     // use the code below to change accel/gyro offset values
     /*
     Serial.println("Updating internal sensor offsets...");
-    // -76	-2359	1688	0	0	0
-    Serial.print(accelgyro.getXAccelOffset()); Serial.print("\t"); // -76
-    Serial.print(accelgyro.getYAccelOffset()); Serial.print("\t"); // -2359
-    Serial.print(accelgyro.getZAccelOffset()); Serial.print("\t"); // 1688
-    Serial.print(accelgyro.getXGyroOffset()); Serial.print("\t"); // 0
-    Serial.print(accelgyro.getYGyroOffset()); Serial.print("\t"); // 0
-    Serial.print(accelgyro.getZGyroOffset()); Serial.print("\t"); // 0
+    // -76  -2359 1688  0 0 0
+    Serial.print(accelgyro1.getXAccelOffset()); Serial.print("\t"); // -76
+    Serial.print(accelgyro1.getYAccelOffset()); Serial.print("\t"); // -2359
+    Serial.print(accelgyro1.getZAccelOffset()); Serial.print("\t"); // 1688
+    Serial.print(accelgyro1.getXGyroOffset()); Serial.print("\t"); // 0
+    Serial.print(accelgyro1.getYGyroOffset()); Serial.print("\t"); // 0
+    Serial.print(accelgyro1.getZGyroOffset()); Serial.print("\t"); // 0
     Serial.print("\n");
-    accelgyro.setXGyroOffset(220);
-    accelgyro.setYGyroOffset(76);
-    accelgyro.setZGyroOffset(-85);
-    Serial.print(accelgyro.getXAccelOffset()); Serial.print("\t"); // -76
-    Serial.print(accelgyro.getYAccelOffset()); Serial.print("\t"); // -2359
-    Serial.print(accelgyro.getZAccelOffset()); Serial.print("\t"); // 1688
-    Serial.print(accelgyro.getXGyroOffset()); Serial.print("\t"); // 0
-    Serial.print(accelgyro.getYGyroOffset()); Serial.print("\t"); // 0
-    Serial.print(accelgyro.getZGyroOffset()); Serial.print("\t"); // 0
+    //accelgyro.setXGyroOffset(220);
+    //accelgyro.setYGyroOffset(76);
+    //accelgyro.setZGyroOffset(-85);
+    Serial.print(accelgyro2.getXAccelOffset()); Serial.print("\t"); // -76
+    Serial.print(accelgyro2.getYAccelOffset()); Serial.print("\t"); // -2359
+    Serial.print(accelgyro2.getZAccelOffset()); Serial.print("\t"); // 1688
+    Serial.print(accelgyro2.getXGyroOffset()); Serial.print("\t"); // 0
+    Serial.print(accelgyro2.getYGyroOffset()); Serial.print("\t"); // 0
+    Serial.print(accelgyro2.getZGyroOffset()); Serial.print("\t"); // 0
     Serial.print("\n");
     */
 
@@ -91,9 +96,29 @@ void setup() {
 
 void loop() {
     // read raw accel/gyro measurements from device
-    accelgyro1.getMotion6(&ax1, &ay1, &az1, &gx1, &gy1, &gz1);
-    accelgyro2.getMotion6(&ax2, &ay2, &az2, &gx2, &gy2, &gz2);
+    //accelgyro1.getMotion6(&ax1, &ay1, &az1, &gx1, &gy1, &gz1);
+    //accelgyro2.getMotion6(&ax2, &ay2, &az2, &gx2, &gy2, &gz2);
+    
+    accelgyro1.getAcceleration(&ax1_i, &ay1_i, &az1_i);
+    accelgyro1.getRotation(&gx1_i, &gy1_i, &gz1_i);
+    accelgyro2.getAcceleration(&ax2_i, &ay2_i, &az2_i);
+    accelgyro2.getRotation(&gx2_i, &gy2_i, &gz2_i);
+    
+    // Convert into readable value (G + Degree/sec)
+    ax1 = ax1_i/16384.0;
+    ay1 = ay1_i/16384.0;
+    az1 = az1_i/16384.0;
+    gx1 = gx1_i/131.0;
+    gy1 = gy1_i/131.0;
+    gz1 = gz1_i/131.0;
 
+    ax2 = ax2_i/16384.0;
+    ay2 = ay2_i/16384.0;
+    az2 = az2_i/16384.0;
+    gx2 = gx2_i/131.0;
+    gy2 = gy2_i/131.0;
+    gz2 = gz2_i/131.0;
+    
     // these methods (and a few others) are also available
     //accelgyro.getAcceleration(&ax, &ay, &az);
     //accelgyro.getRotation(&gx, &gy, &gz);
@@ -118,12 +143,14 @@ void loop() {
     #endif
 
     #ifdef OUTPUT_BINARY_ACCELGYRO
+    /*
         Serial.write((uint8_t)(ax >> 8)); Serial.write((uint8_t)(ax & 0xFF));
         Serial.write((uint8_t)(ay >> 8)); Serial.write((uint8_t)(ay & 0xFF));
         Serial.write((uint8_t)(az >> 8)); Serial.write((uint8_t)(az & 0xFF));
         Serial.write((uint8_t)(gx >> 8)); Serial.write((uint8_t)(gx & 0xFF));
         Serial.write((uint8_t)(gy >> 8)); Serial.write((uint8_t)(gy & 0xFF));
         Serial.write((uint8_t)(gz >> 8)); Serial.write((uint8_t)(gz & 0xFF));
+    */
     #endif
 
     // blink LED to indicate activity
