@@ -5,7 +5,7 @@ import time
 from Crypto import Random
 from Crypto.Cipher import AES
 import base64
-
+import testdeserial as tds
 
 def readlineCR(port): 
 	rv="" 
@@ -14,7 +14,7 @@ def readlineCR(port):
 		rv+=ch 
 		if ch=='\r' or ch =='': 
 			return rv
-			
+
 class Data():
 	def __init__(self, socket):
 		self.bs = 32
@@ -44,8 +44,8 @@ class Data():
 class RaspberryPi():
 	def __init__(self):
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		#self.serial_port=serial.Serial("/dev/ttyACM0", baudrate=115200) #For linux
-		self.serial_port=serial.Serial("/dev/serial0", baudrate=115200, timeout=0) #For the Rpi
+		self.test_counter = 0
+		self.isHandshakeDone = False
 
 	def connectToServer(self):
 		IPAddress = sys.argv[1]
@@ -54,58 +54,66 @@ class RaspberryPi():
 		self.sock.connect(server_address)
 
 	def connectToArduino(self):
+                #self.serial_port= serial.Serial('/dev/ttyAMA0', baudrate=9600, timeout=3.0) #For linux
+		self.serial_port=serial.Serial("/dev/serial0", baudrate=115200, timeout=0) #For the Rpi
+		print("Port Open!")
 		self.serial_port.reset_input_buffer()
 		self.serial_port.reset_output_buffer()
 
 	def run(self):
 		try:
 			#Connections
-			self.connectToServer()
-			print("Connected to test server")
-			data = Data(self.sock)
+			#self.connectToServer()
+			#print("Connected to test server")
+			#data = Data(self.sock)
 
 			self.connectToArduino()
 
 			#Handshaking with Arduino
-			
 			while(self.isHandshakeDone == False):
-                            self.serial_port.write('H')
-                            print("H sent")
-                            time.sleep(0.5)
-                            #print(self.serial_port.in_waiting)
-                            reply = self.serial_port.read(1)
-                            #print(reply)
-                            if(reply == 'B'):
-                                self.isHandshakeDone = True
-                                self.serial_port.reset_input_buffer()
-                                self.serial_port.write('F')
-                                print("Connected to Arduino")
-                            else:
-                                time.sleep(0.5)
+                self.serial_port.write('H')
+                print("H sent")
+                time.sleep(0.5)
+                #print(self.serial_port.in_waiting)
+                reply = self.serial_port.read(1)
+                #print(reply)
+                if(reply == 'B'):
+                    self.isHandshakeDone = True
+                    self.serial_port.write('F')
+                    print("Connected to Arduino")
+                    self.serial_port.readline()
+                    time.sleep(1)
+                else:
+                    time.sleep(0.5)
                     
 			#if no byte to read
 			#if(self.serial_port.in_waiting != 0 or self.serial_port.read() ):
 			#	print("Disconnected")
 
 			#Receive data from Arduino(periodically)
-##			while(1):
-##				if(self.serial_port.in_waiting != 0):
-##					arduino_data = readlineCR(self.serial_port)
-##					print(arduino_data)
+			while(True):
+                instruction = raw_input("Type the next command")
+                self.serial_port.write('R')
+                time.sleep(1)
+				if(self.serial_port.inWaiting() > 0):
+					arduino_data = readlineCR(self.serial_port)
+					print(arduino_data)
+					deserialise_data = tds.get_data(arduino_data)
+					print(deserialise_data)
+					tds.calc_checksum(deserialise_data)
 ##					self.test_counter += 1
 ##					line_to_send = "A" + str(self.test_counter)
 ##					print(line_to_send)
 ##					self.serial_port.write(line_to_send)
-
+					
 			#test communication with server.
 			while(True):
-				name = input("What is the dance move?")
+				name = raw_input("What is the dance move?")
 				data.voltage = 12
 				data.current = 1
 				data.power = 100
 				data.cumpower
 				data.sendData(name)
-
 
 		except KeyboardInterrupt:
 			sys.exit(1)
