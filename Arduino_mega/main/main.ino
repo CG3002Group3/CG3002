@@ -9,7 +9,7 @@
 
 #define STACK_SIZE 200
 #define OUTPUT_READABLE_ACCELGYRO
-#define SAMPLE_SIZE 50
+#define SAMPLE_SIZE 4
 
 MPU6050 accelgyro1(0x68);
 MPU6050 accelgyro2(0x69);
@@ -22,7 +22,7 @@ const int VOLTAGE_REF = 5;  // Reference voltage for analog read
 // Global Variables
 float currSensor = 0;   // Variable to store value from analog read
 float voltSensor = 0;
-float current;       // Calculated current value from current sensor
+float current = 0;       // Calculated current value from current sensor
 float power = 0;  // Calculated Power Value
 float energy = 0;
 unsigned long prev_time, diff_time;
@@ -43,18 +43,15 @@ int16_t gx2_i, gy2_i, gz2_i;
 float ax2, ay2, az2;
 float gx2, gy2, gz2;
 
-// Semaphores
-SemaphoreHandle_t dataSemaphore = xSemaphoreCreateBinary();
-
 // Buffer
-char ax1Char[4], ay1Char[4], az1Char[4], gx1Char[4], 
-gy1Char[4], gz1Char[4], ax2Char[4], ay2Char[4], 
-az2Char[4], gx2Char[4], gy2Char[4], gz2Char[4], 
-voltChar[4], currentChar[4], powerChar[4];
+char* ax1Char; char* ay1Char; char* az1Char; char* gx1Char;
+char* gy1Char; char* gz1Char; char* ax2Char; char* ay2Char; 
+char* az2Char; char* gx2Char; char* gy2Char; char* gz2Char;
+char* voltChar; char* currentChar; char* powerChar;
 char dataBuffer[3000];
 
 // Checksum
-char checkSum = 0;
+int checkSum = 0;
 int checkSum2;
 char checksumChar[4];
 
@@ -85,62 +82,53 @@ void connectToPi() {
 
 }
 
-void readAcc(void *p){
+void mainTask(void *p){
+  int incomingByte;
+  unsigned int len;
+  char s[4];
   TickType_t xLastWakeTime;
-  const TickType_t xFrequency = 50 / portTICK_PERIOD_MS; // read acc every 50ms
 
   xLastWakeTime = xTaskGetTickCount();
   for(;;){
-    processAcc();
-    if (xSemaphoreTake (dataSemaphore, 1) == pdTRUE) {
-      // ACC 1
-      itoa(ax1, ax1Char, 10);    //convert int to char[]
-      strcat(dataBuffer, ax1Char);
-      strcat(dataBuffer, ",");
-      itoa(ay1, ay1Char, 10);
-      strcat(dataBuffer, ax1Char);
-      strcat(dataBuffer, ",");
-      itoa(az1, az1Char, 10);
-      strcat(dataBuffer, az1Char);
-      strcat(dataBuffer, ",");
-  
-      // ACC 1
-      itoa(ax2, ax2Char, 10);    //convert int to char[]
-      strcat(dataBuffer, ax2Char);
-      strcat(dataBuffer, ",");
-      itoa(ay2, ay2Char, 10);
-      strcat(dataBuffer, ax2Char);
-      strcat(dataBuffer, ",");
-      itoa(az2, az2Char, 10);
-      strcat(dataBuffer, az2Char);
-      strcat(dataBuffer, ",");
-
-      // Gyro 1
-      itoa(gx1, gx1Char, 10);    //convert int to char[]
-      strcat(dataBuffer, gx1Char);
-      strcat(dataBuffer, ",");
-      itoa(gy1, gy1Char, 10);
-      strcat(dataBuffer, gx1Char);
-      strcat(dataBuffer, ",");
-      itoa(gz1, gz1Char, 10);
-      strcat(dataBuffer, gz1Char);
-      strcat(dataBuffer, ",");
-
-      // Gyro 2
-      itoa(gx2, gx2Char, 10);    //convert int to char[]
-      strcat(dataBuffer, gx2Char);
-      strcat(dataBuffer, ",");
-      itoa(gy2, gy2Char, 10);
-      strcat(dataBuffer, gx2Char);
-      strcat(dataBuffer, ",");
-      itoa(gz2, gz2Char, 10);
-      strcat(dataBuffer, gz2Char);
-      strcat(dataBuffer, ",");
-      
-      xSemaphoreGive(dataSemaphore);
+    if (Serial1.available()) {       // Check if message available
+      incomingByte = Serial1.read();    
     }
- 
-    vTaskDelayUntil(&xLastWakeTime, xFrequency);
+    if(incomingByte == 'R'){
+      xLastWakeTime = xTaskGetTickCount();
+      strcpy(dataBuffer, ""); //clear the dataBuffer
+
+      processPower();
+      
+      for (int i = 0; i < SAMPLE_SIZE; i++) {
+        processAcc();
+        ACCMessageFormat();
+        vTaskDelayUntil(&xLastWakeTime, (50 / portTICK_PERIOD_MS)); // read acc every 10ms
+      }
+      
+      //processPower();
+      //powerMessageFormat();  
+
+      len = strlen(dataBuffer);
+      for (int i = 0; i < len; i++) {
+        checkSum += dataBuffer[i];
+      }
+
+      // check sum
+      checkSum2 = (int)checkSum;
+      itoa(checkSum2, checksumChar, 10);
+      //strcat(dataBuffer, ","); 
+      strcat(dataBuffer, checksumChar);
+
+      len = strlen(dataBuffer);
+      //dataBuffer[len + 1] = '\n';
+
+      //Send message
+      for (int j = 0; j < len + 1; j++) {
+        Serial1.write(dataBuffer[j]);
+      }
+      incomingByte = 0;
+      checkSum = 0;
+    }
   }
 }
 void processAcc(){
@@ -202,27 +190,63 @@ void processAcc(){
     */
     #endif
 }
-void readVI(void *p){
-  TickType_t xLastWakeTime;
-  const TickType_t xFrequency = 1000 / portTICK_PERIOD_MS; // read power every 1s
 
-  xLastWakeTime = xTaskGetTickCount();
-  for(;;){
-    if (xSemaphoreTake (dataSemaphore, 1) == pdTRUE) {
-      processPower();
-      itoa(voltSensor, voltChar, 10);    //convert int to char[]
-      strcat(dataBuffer, voltChar);
-      strcat(dataBuffer, ",");
-      itoa(currSensor, currentChar, 10);
-      strcat(dataBuffer, currentChar);
-      strcat(dataBuffer, ",");
-      itoa(power, powerChar, 10);
-      strcat(dataBuffer, powerChar);
-      strcat(dataBuffer, ",");
-      xSemaphoreGive(dataSemaphore);
-    }
-    vTaskDelayUntil(&xLastWakeTime, xFrequency);
-  }
+void ACCMessageFormat(){
+  char buffer[100];
+  // ACC 1
+  ax1Char = dtostrf(ax1, 3, 2, buffer);
+  strcat(dataBuffer, ax1Char);
+  strcat(dataBuffer, ",");
+  ay1Char = dtostrf(ay1, 3, 2, buffer);
+  strcat(dataBuffer, ay1Char);
+  strcat(dataBuffer, ",");
+  az1Char = dtostrf(az1, 3, 2, buffer);
+  strcat(dataBuffer, az1Char);
+  strcat(dataBuffer, ",");
+  
+  // ACC 1
+  ax2Char = dtostrf(ax2, 3, 2, buffer);
+  strcat(dataBuffer, ax2Char);
+  strcat(dataBuffer, ",");
+  ay2Char = dtostrf(ay2, 3, 2, buffer);
+  strcat(dataBuffer, ay2Char);
+  strcat(dataBuffer, ",");
+  az2Char = dtostrf(az2, 3, 2, buffer);
+  strcat(dataBuffer, az2Char);
+  strcat(dataBuffer, ",");
+
+  // Gyro 1
+  gx1Char = dtostrf(gx1, 3, 2, buffer);
+  strcat(dataBuffer, gx1Char);
+  strcat(dataBuffer, ",");
+  gy1Char = dtostrf(gy1, 3, 2, buffer);
+  strcat(dataBuffer, gy1Char);
+  strcat(dataBuffer, ",");
+  gz1Char = dtostrf(gz1, 3, 2, buffer);
+  strcat(dataBuffer, gz1Char);
+  strcat(dataBuffer, ",");
+
+  // Gyro 2
+  gx2Char = dtostrf(gx2, 3, 2, buffer);
+  strcat(dataBuffer, gx2Char);
+  strcat(dataBuffer, ",");
+  gy2Char = dtostrf(gy2, 3, 2, buffer);
+  strcat(dataBuffer, gy2Char);
+  strcat(dataBuffer, ","); 
+  gz2Char = dtostrf(gz2, 3, 2, buffer);
+  strcat(dataBuffer, gz2Char);
+  strcat(dataBuffer, ",");
+
+  //char buffer[10];
+  voltChar = dtostrf(voltSensor, 3, 2, buffer);
+  strcat(dataBuffer, voltChar);
+  strcat(dataBuffer, ",");
+  currentChar = dtostrf(currSensor, 3, 2, buffer);
+  strcat(dataBuffer, currentChar);
+  strcat(dataBuffer, ",");
+  powerChar = dtostrf(power, 3, 2, buffer);
+  strcat(dataBuffer, powerChar);
+  strcat(dataBuffer, "\n");
 }
 
 void processPower(){
@@ -258,49 +282,16 @@ void processPower(){
   Serial.println(" ");
 }
 
-void sendToPi(void *p){
-  char buffer[128];
-  int incoming = Serial1.read();
-  unsigned len;
-  unsigned long timeNow;
-  char s[4];
-  TickType_t xLastWakeTime;
-  const TickType_t xFrequency = 200 / portTICK_PERIOD_MS; // send data to PI every 200ms
-
-  xLastWakeTime = xTaskGetTickCount();
-  for(;;){
-    if (xSemaphoreTake (dataSemaphore, 1) == pdTRUE) {
-      Serial.println("I'm SENDING!");       
-      len = strlen(dataBuffer);
-      for (int i = 0; i < len; i++) {
-        checkSum ^= dataBuffer[i];
-      }
-
-      // check sum
-      checkSum2 = (int)checkSum;
-      itoa(checkSum2, checksumChar, 10);
-      strcat(dataBuffer, ","); 
-      strcat(dataBuffer, checksumChar);
-
-      // get current timestamp
-      timeNow = millis();
-      itoa(timeNow, s, 10);
-      strcat(dataBuffer, ","); 
-      strcat(dataBuffer, s);
-
-      len = strlen(dataBuffer);
-      dataBuffer[len + 1] = '\n'; // new line character 
-      
-      //Send message to Rpi
-//      for (int j = 0; j < len; j++) {
-//        Serial1.write(dataBuffer[j]);
-//      }
-      memset(dataBuffer, 0, sizeof dataBuffer);
-      
-      xSemaphoreGive(dataSemaphore);
-    }
-    vTaskDelayUntil(&xLastWakeTime, xFrequency);
-  }       
+void powerMessageFormat(){
+  char buffer[10];
+  voltChar = dtostrf(voltSensor, 3, 2, buffer);
+  strcat(dataBuffer, voltChar);
+  strcat(dataBuffer, ",");
+  currentChar = dtostrf(currSensor, 3, 2, buffer);
+  strcat(dataBuffer, currentChar);
+  strcat(dataBuffer, ",");
+  powerChar = dtostrf(power, 3, 2, buffer);
+  strcat(dataBuffer, powerChar);
 }
 
 void setup() {
@@ -361,14 +352,8 @@ void setup() {
   accelgyro2.setZGyroOffset(-3);
   //*/
   
-  //connectToPi();
-  xSemaphoreGive(dataSemaphore);
-  xTaskCreate(sendToPi, "Sending data packets", 400, NULL, 3, NULL);
-  Serial.println("Task1 activated!");
-  xTaskCreate(readAcc, "Read accelerometer values", 400, NULL, 2, NULL);
-  Serial.println("Task2 activated!");
-  xTaskCreate(readVI, "Read VIP", 400, NULL, 1, NULL);
-  Serial.println("Task3 activated!");
+  connectToPi();
+  xTaskCreate(mainTask, "Main Task", 400, NULL, 3, NULL);
 }
 
 void loop() {
