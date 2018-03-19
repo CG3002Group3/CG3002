@@ -114,10 +114,10 @@ void mainTask(void *p){
       }
 
       // check sum
-      checkSum2 = (int)checkSum;
-      itoa(checkSum2, checksumChar, 10);
+      //checkSum2 = (int)checkSum;
+      //itoa(checkSum2, checksumChar, 10);
       //strcat(dataBuffer, ","); 
-      strcat(dataBuffer, checksumChar);
+      //strcat(dataBuffer, checksumChar);
 
       len = strlen(dataBuffer);
       //dataBuffer[len + 1] = '\n';
