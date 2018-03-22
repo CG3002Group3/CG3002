@@ -2,8 +2,10 @@ from sklearn.externals import joblib
 import numpy as np
 import time
 
-move = ["Walk", "Run"]
+move = ["WTF", "Wavehand", "Jump", "Frontback", "Turnclap", "Window"]
 clf = joblib.load('walk_or_run_0.1.pkl')
+
+
 
 # Sample only must be an array of 18 floats: 6 means, 6 variances, 6 medians
 walk_sample = [0.458476,-1.004446,-0.088374,-0.053638,-0.031348,-0.07992, 0.021267429,0.047860016,0.015594766,0.162634999,0.282407261,3.881078688,0.45645,-0.98135,-0.0728,-0.0201,-0.0515,0.20695]
