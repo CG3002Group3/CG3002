@@ -62,7 +62,7 @@ class RaspberryPi():
 		self.sock.connect(server_address)
 
 	def connectToArduino(self):
-                #self.serial_port= serial.Serial('/dev/ttyAMA0', baudrate=9600, timeout=3.0) #For linux
+        #self.serial_port= serial.Serial('/dev/ttyAMA0', baudrate=9600, timeout=3.0) #For linux
 		self.serial_port=serial.Serial("/dev/serial0", baudrate=115200, timeout=0) #For the Rpi
 		print("Port Open!")
 		self.serial_port.reset_input_buffer()
@@ -122,16 +122,16 @@ class RaspberryPi():
                 time.sleep(0.1)
 			    if(self.serial_port.inWaiting() > 0):
                     arduino_data = readlineCR(self.serial_port)
-                    self.data.sample_queue.appendleft(arduino_data.split("\n")[:-1])
-                    if(len(self.data.sample_queue) == 20):
-                        predict.predict_data(list(self.data.sample_queue))
+                    data.sample_queue.appendleft(arduino_data.split("\n")[:-1])
+                    if(len(data.sample_queue) == 20):
+                        predict.predict_data(list(data.sample_queue))
                                 
-##					deserialise_data = tds.get_data(arduino_data)
-##					print(deserialise_data)
-##					self.test_counter += 1
-##					line_to_send = "A" + str(self.test_counter)
-##					print(line_to_send)
-##					self.serial_port.write(line_to_send)
+			# deserialise_data = tds.get_data(arduino_data)
+			# print(deserialise_data)
+			# self.test_counter += 1
+			# line_to_send = "A" + str(self.test_counter)
+			# print(line_to_send)
+			# self.serial_port.write(line_to_send)
 					
 			#test communication with server.
 ##			while(True):
