@@ -3,7 +3,7 @@ import numpy as np
 import time
 
 move = ["WTF", "Wavehand", "Jump", "Frontback", "Turnclap", "Window"]
-clf = joblib.load('walk_or_run_0.1.pkl')
+clf = joblib.load('0.98_v2.pkl')
 
 def predict_data(data_set):
     data_array = [row.split(',') for row in data_set]
@@ -21,4 +21,4 @@ def predict_data(data_set):
     prev_time = time.time()
     print(move[int(clf.predict(x)[0])] + " in " + str(time.time() - prev_time) + "s")
 
-predict_data(["1,2,3,4,5,3,1,2,3,4,5,3,10,11,13", "1,2,3,3,3,3,1,2,3,4,5,3,10,11,12"])
+#predict_data(["1,2,3,4,5,3,1,2,3,4,5,3,10,11,13", "1,2,3,3,3,3,1,2,3,4,5,3,10,11,12"])

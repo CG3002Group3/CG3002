@@ -1,3 +1,4 @@
+import collections
 import datetime
 import serial
 import socket
@@ -7,8 +8,11 @@ from Crypto import Random
 from Crypto.Cipher import AES
 import base64
 import testdeserial as tds
+import predict as predict
 
 useServer = 0
+collect_test_data = 0
+testing_samples = 1
 
 def readlineCR(port): 
 	rv="" 
@@ -27,6 +31,7 @@ class Data():
 		self.power = 0  #voltage * current
 		self.cumpower=0
 		self.sock = socket
+		self.sample_queue = collections.dequeue([], 20)
 
 	def pad(self, msg):
 		return msg + (self.bs - len(msg)%self.bs)*chr(self.bs - len(msg)%self.bs)
@@ -94,24 +99,35 @@ class RaspberryPi():
 			#if(self.serial_port.in_waiting != 0 or self.serial_port.read() ):
 			#	print("Disconnected")
 
-			#Receive data from Arduino(periodically)
+			#Receive data from Arduino(periodically) and save to CSV
 			send_flag = True
-			while(True):
-                                #instruction = raw_input("Type the next command")
-                                if (send_flag == True):
-                                    self.serial_port.write('R')
-                                    send_flag = False
-                                time.sleep(0.1)
-				if(self.serial_port.inWaiting() > 0):
-					arduino_data = readlineCR(self.serial_port)
-					#arduino_data = arduino_data + str(datetime.datetime.now())
-					print(arduino_data)
-					tds.save_data(arduino_data)
-					send_flag = True
-
+			while(collect_test_data):
+                            #instruction = raw_input("Type the next command")
+                            if (send_flag == True):
+                                self.serial_port.write('R')
+                                send_flag = False
+                            time.sleep(0.1)
+			    if(self.serial_port.inWaiting() > 0):
+                                arduino_data = readlineCR(self.serial_port)
+                                print(arduino_data)
+                                tds.save_data(arduino_data)
+                                send_flag = True
+                                tds.calc_checksum(arduino_data)
+			
+			#Read and Predict the results
+			while(testing_samples):
+                            if (send_flag == True):
+                                self.serial_port.write('R')
+                                send_flag = False
+                            time.sleep(0.1)
+			    if(self.serial_port.inWaiting() > 0):
+                                arduino_data = readlineCR(self.serial_port)
+                                self.data.sample_queue.appendleft(arduino_data.split("\n")[:-1])
+                                if(len(self.data.sample_queue) == 20):
+                                    predict.predict_data(list(self.data.sample_queue))
+                                
 ##					deserialise_data = tds.get_data(arduino_data)
 ##					print(deserialise_data)
-					tds.calc_checksum(arduino_data)
 ##					self.test_counter += 1
 ##					line_to_send = "A" + str(self.test_counter)
 ##					print(line_to_send)

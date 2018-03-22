@@ -27,4 +27,3 @@ def hex_str_to_btye(msg):
 	return msg
 	
 #if __name__ == '__main__':
->>>>>>> feature/melanie-feature
