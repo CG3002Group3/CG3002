@@ -71,29 +71,29 @@ class RaspberryPi():
 	def run(self):
 		try:
 			#Connections
-                        if(useServer):
-                            self.connectToServer()
-                            print("Connected to test server")
-                            data = Data(self.sock)
+            if(useServer):
+                self.connectToServer()
+                print("Connected to test server")
+                data = Data(self.sock)
 
 			self.connectToArduino()
 
 			#Handshaking with Arduino
 			while(self.isHandshakeDone == False):
-                            self.serial_port.write('H')
-                            print("H sent")
-                            time.sleep(0.5)
-                            #print(self.serial_port.in_waiting)
-                            reply = self.serial_port.read(1)
-                            #print(reply)
-                            if(reply == 'B'):
-                                self.isHandshakeDone = True
-                                self.serial_port.write('F')
-                                print("Connected to Arduino")
-                                self.serial_port.readline()
-                                time.sleep(1)
-                            else:
-                                time.sleep(0.5)
+                self.serial_port.write('H')
+                print("H sent")
+                time.sleep(0.5)
+                #print(self.serial_port.in_waiting)
+                reply = self.serial_port.read(1)
+                #print(reply)
+                if(reply == 'B'):
+                    self.isHandshakeDone = True
+                    self.serial_port.write('F')
+                    print("Connected to Arduino")
+                    self.serial_port.readline()
+                    time.sleep(1)
+                else:
+                    time.sleep(0.5)
                     
 			#if no byte to read
 			#if(self.serial_port.in_waiting != 0 or self.serial_port.read() ):
@@ -102,29 +102,29 @@ class RaspberryPi():
 			#Receive data from Arduino(periodically) and save to CSV
 			send_flag = True
 			while(collect_test_data):
-                            #instruction = raw_input("Type the next command")
-                            if (send_flag == True):
-                                self.serial_port.write('R')
-                                send_flag = False
-                            time.sleep(0.1)
+                #instruction = raw_input("Type the next command")
+                if (send_flag == True):
+                    self.serial_port.write('R')
+                    send_flag = False
+                time.sleep(0.1)
 			    if(self.serial_port.inWaiting() > 0):
-                                arduino_data = readlineCR(self.serial_port)
-                                print(arduino_data)
-                                tds.save_data(arduino_data)
-                                send_flag = True
-                                tds.calc_checksum(arduino_data)
+                    arduino_data = readlineCR(self.serial_port)
+                    print(arduino_data)
+                    tds.save_data(arduino_data)
+                    send_flag = True
+                    tds.calc_checksum(arduino_data)
 			
 			#Read and Predict the results
 			while(testing_samples):
-                            if (send_flag == True):
-                                self.serial_port.write('R')
-                                send_flag = False
-                            time.sleep(0.1)
+                if (send_flag == True):
+                    self.serial_port.write('R')
+                    send_flag = False
+                time.sleep(0.1)
 			    if(self.serial_port.inWaiting() > 0):
-                                arduino_data = readlineCR(self.serial_port)
-                                self.data.sample_queue.appendleft(arduino_data.split("\n")[:-1])
-                                if(len(self.data.sample_queue) == 20):
-                                    predict.predict_data(list(self.data.sample_queue))
+                    arduino_data = readlineCR(self.serial_port)
+                    self.data.sample_queue.appendleft(arduino_data.split("\n")[:-1])
+                    if(len(self.data.sample_queue) == 20):
+                        predict.predict_data(list(self.data.sample_queue))
                                 
 ##					deserialise_data = tds.get_data(arduino_data)
 ##					print(deserialise_data)

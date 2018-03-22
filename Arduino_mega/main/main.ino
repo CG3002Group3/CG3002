@@ -104,14 +104,13 @@ void mainTask(void *p){
         ACCMessageFormat();
         vTaskDelayUntil(&xLastWakeTime, (50 / portTICK_PERIOD_MS)); // read acc every 10ms
       }
-      
-      //processPower();
-      //powerMessageFormat();  
 
       len = strlen(dataBuffer);
       for (int i = 0; i < len; i++) {
         checkSum += dataBuffer[i];
       }
+      Serial.print("Checksum is ");
+      Serial.println(checkSum);
 
       // check sum
       //checkSum2 = (int)checkSum;
@@ -120,9 +119,8 @@ void mainTask(void *p){
       //strcat(dataBuffer, checksumChar);
 
       len = strlen(dataBuffer);
-      //dataBuffer[len + 1] = '\n';
 
-      //Send message
+      //Send message to rpi
       for (int j = 0; j < len + 1; j++) {
         Serial1.write(dataBuffer[j]);
       }
@@ -204,7 +202,7 @@ void ACCMessageFormat(){
   strcat(dataBuffer, az1Char);
   strcat(dataBuffer, ",");
   
-  // ACC 1
+  // ACC 2
   ax2Char = dtostrf(ax2, 3, 2, buffer);
   strcat(dataBuffer, ax2Char);
   strcat(dataBuffer, ",");
@@ -237,7 +235,7 @@ void ACCMessageFormat(){
   strcat(dataBuffer, gz2Char);
   strcat(dataBuffer, ",");
 
-  //char buffer[10];
+  // Voltage, Current and Power
   voltChar = dtostrf(voltSensor, 3, 2, buffer);
   strcat(dataBuffer, voltChar);
   strcat(dataBuffer, ",");
@@ -255,7 +253,6 @@ void processPower(){
   currSensor = analogRead(A1);
   voltSensor = ((voltSensor * 5) / 1023) * 2;  //278.333333 = V * R1 / R1 + R2
   currSensor = ((currSensor * 5) / 1023);
-  //current = currSensor / (10.0 * 0.1);
   power = voltSensor * currSensor;
 
   Serial.print(diff_time);
@@ -280,18 +277,6 @@ void processPower(){
   Serial.print(energy);
   Serial.println(" J");
   Serial.println(" ");
-}
-
-void powerMessageFormat(){
-  char buffer[10];
-  voltChar = dtostrf(voltSensor, 3, 2, buffer);
-  strcat(dataBuffer, voltChar);
-  strcat(dataBuffer, ",");
-  currentChar = dtostrf(currSensor, 3, 2, buffer);
-  strcat(dataBuffer, currentChar);
-  strcat(dataBuffer, ",");
-  powerChar = dtostrf(power, 3, 2, buffer);
-  strcat(dataBuffer, powerChar);
 }
 
 void setup() {
