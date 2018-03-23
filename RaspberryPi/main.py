@@ -7,19 +7,19 @@ import time
 from Crypto import Random
 from Crypto.Cipher import AES
 import base64
-import testdeserial as tds
+import checksum as cs
 import predict as predict
 
-useServer = 1
-collect_test_data = 0
-testing_samples = 1
+useServer = 0
+collect_test_data = 1
+testing_samples = 0
 
 def readlineCR(port): 
     rv="" 
     while True: 
         ch=port.read() 
         rv+=ch 
-        if ch=='\r' or ch =='': 
+        if ch=='\r': 
             return rv
 
 class Data():
@@ -108,9 +108,9 @@ class RaspberryPi():
                 if(self.serial_port.inWaiting() > 0):
                     arduino_data = readlineCR(self.serial_port)
                     print(arduino_data)
-                    tds.save_data(arduino_data)
+                    #cs.save_data(arduino_data)
                     send_flag = True
-                    tds.calc_checksum(arduino_data)
+                    cs.calc_checksum(arduino_data)
             
             #Read and Predict the results
             while(testing_samples):
