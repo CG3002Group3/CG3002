@@ -18,3 +18,4 @@ def calc_checksum(data_set):
     #print"Calculated checksum is ", checksum_value
     if(int(checksum_value) == int(value_to_tally)):
         print("Tally! checksum = ", checksum_value)
+        return true
