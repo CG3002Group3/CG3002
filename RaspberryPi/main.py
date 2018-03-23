@@ -1,4 +1,4 @@
-import collections
+from collections import deque
 import datetime
 import serial
 import socket
@@ -31,7 +31,7 @@ class Data():
         self.power = 0  #voltage * current
         self.cumpower=0
         self.sock = socket
-        self.sample_queue = collections.dequeue([], 20)
+        self.sample_queue = deque([], 20)
 
     def pad(self, msg):
         return msg + (self.bs - len(msg)%self.bs)*chr(self.bs - len(msg)%self.bs)
