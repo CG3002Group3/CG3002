@@ -121,9 +121,14 @@ class RaspberryPi():
                 if(self.serial_port.inWaiting() > 0):
                     send_flag = True
                     arduino_data = readlineCR(self.serial_port)
-                    data.sample_queue.appendleft(arduino_data.split("\n")[:-1])
+                    print(arduino_data)
+                    arduino_data_list = arduino_data.split("\n")[:-1]
+                    for item in arduino_data_list:
+                        data.sample_queue.appendleft(item)
+                    #data.sample_queue.appendleft(arduino_data.split("\n")[:-1])
                     if(len(data.sample_queue) == 20):
-                        predict.predict_data(list(data.sample_queue))
+                        predict.predict_data(data.sample_queue)
+                        data.sample_queue.clear()
                                 
             # deserialise_data = tds.get_data(arduino_data)
             # print(deserialise_data)

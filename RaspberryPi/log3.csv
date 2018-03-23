@@ -1,0 +1,6 @@
+timestamp,action,goal,time_delta,correct,voltage,current,power,cumpower
+1521788149.9989367,None,squatturnclap,60.00487685203552,False,0,0,0,0
+1521788210.0935812,None,jump,60.00258421897888,False,0,0,0,0
+1521788270.1322243,None,frontback,60.002201318740845,False,0,0,0,0
+1521788330.1728277,None,wavehands,60.00202131271362,False,0,0,0,0
+1521788692.3218381,None,sidestep,60.00269651412964,False,0,0,0,0
