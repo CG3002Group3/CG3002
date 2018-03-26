@@ -10,9 +10,9 @@ import base64
 import checksum as cs
 import predict as predict
 
-useServer = 1
-collect_test_data = 0
-testing_samples = 1
+useServer = 0
+collect_test_data = 1
+testing_samples = 0
 
 def readlineCR(port): 
     rv="" 
@@ -108,7 +108,7 @@ class RaspberryPi():
                 if(self.serial_port.inWaiting() > 0):
                     arduino_data = readlineCR(self.serial_port)
                     print(arduino_data)
-                    #cs.save_data(arduino_data)
+                    cs.save_data(arduino_data)
                     send_flag = True
                     cs.calc_checksum(arduino_data)
             
@@ -123,11 +123,10 @@ class RaspberryPi():
                     arduino_data = readlineCR(self.serial_port)
                     #print(arduino_data)
                     if(cs.calc_checksum(arduino_data)):
-                        last_comma_index = arduino_data.rfind(",");
+                        last_comma_index = arduino_data.rfind(",")
                         arduino_data = arduino_data[:last_comma_index] #strip out the checksum
                         arduino_data_list = arduino_data.split("\n")[:-1]
                         for item in arduino_data_list:
-                            item.replace('\x00', '')
                             data.sample_queue.appendleft(item)
                     
                     if(len(data.sample_queue) == 20):
