@@ -93,8 +93,9 @@ void mainTask(void *p){
     if (Serial1.available()) {       // Check if message available
       incomingByte = Serial1.read();    
     }
-    if(incomingByte == 'H'){
+    if(incomingByte == 'H'){ // Reconnect with the Rpi
       handShakeFlag = 0;
+      ackFlag = 0;
       connectToPi();
     }
     if(incomingByte == 'R'){
@@ -117,10 +118,10 @@ void mainTask(void *p){
       Serial.println(checkSum);
 
       // check sum
-      //checkSum2 = (int)checkSum;
-      //itoa(checkSum2, checksumChar, 10);
-      //strcat(dataBuffer, ","); 
-      //strcat(dataBuffer, checksumChar);
+      checkSum2 = (int)checkSum;
+      itoa(checkSum2, checksumChar, 10);
+      strcat(dataBuffer, ","); 
+      strcat(dataBuffer, checksumChar);
 
       len = strlen(dataBuffer);
 
