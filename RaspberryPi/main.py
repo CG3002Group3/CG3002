@@ -62,7 +62,6 @@ class RaspberryPi():
         self.sock.connect(server_address)
 
     def connectToArduino(self):
-        #self.serial_port= serial.Serial('/dev/ttyAMA0', baudrate=9600, timeout=3.0) #For linux
         self.serial_port=serial.Serial("/dev/serial0", baudrate=115200, timeout=0) #For the Rpi
         print("Port Open!")
         self.serial_port.reset_input_buffer()
@@ -92,15 +91,10 @@ class RaspberryPi():
                     time.sleep(1)
                 else:
                     time.sleep(0.5)
-                    
-            #if no byte to read
-            #if(self.serial_port.in_waiting != 0 or self.serial_port.read() ):
-            #   print("Disconnected")
 
             #Receive data from Arduino(periodically) and save to CSV
             send_flag = True
             while(collect_test_data):
-                #instruction = raw_input("Type the next command")
                 if (send_flag == True):
                     self.serial_port.write('R')
                     send_flag = False
@@ -132,13 +126,6 @@ class RaspberryPi():
                     if(len(data.sample_queue) == 20):
                         predict.predict_data(data.sample_queue)
                         data.sample_queue.clear()
-                                
-            # deserialise_data = tds.get_data(arduino_data)
-            # print(deserialise_data)
-            # self.test_counter += 1
-            # line_to_send = "A" + str(self.test_counter)
-            # print(line_to_send)
-            # self.serial_port.write(line_to_send)
                     
             #test communication with server.
 ##          while(True):
