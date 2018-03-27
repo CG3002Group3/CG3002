@@ -58,7 +58,7 @@ int checkSum2;
 char checksumChar[4];
 
 // Semaphores
-SemaphoreHandle_t dataSemaphore = xSemaphoreCreateBinary();
+SemaphoreHandle_t dataSemaphore;
 
 void connectToPi() {
   //receive Handshake from Rpi
@@ -97,23 +97,23 @@ void sendToPi() {
   xLastWakeTime = xTaskGetTickCount();
 
   for(;;){
-    if (xSemaphoreTake (dataSemaphore, 1) == pdTRUE) {
-      if (Serial1.available()) {       // Check if message available
-        incomingByte = Serial1.read();
-      }    
-    }
+    xSemaphoreTake(dataSemaphore, portMAX_DELAY);
+    
+    if (Serial1.available()) {       // Check if message available
+      incomingByte = Serial1.read();
+      Serial.println(incomingByte);
+    }    
+   
     if(incomingByte == 'R'){
       strcpy(dataBuffer, ""); //clear the dataBuffer
       Serial.println("Sending data to PI");
 
       len = strlen(dataBuffer);
-      for (int i = 0; i < len; i++) {
-        checkSum += dataBuffer[i];
+      for (int i = 0; i <= len; i++) {
+        checkSum ^= dataBuffer[i];
       }
       Serial.print("Checksum is ");
       Serial.println(checkSum);
-
-      len = strlen(dataBuffer);
 
       //Send message to rpi
       for (int j = 0; j < len + 1; j++) {
@@ -121,24 +121,26 @@ void sendToPi() {
       }
       incomingByte = 0;
       checkSum = 0;
-      xSemaphoreGive(dataSemaphore);
     }
+    xSemaphoreGive(dataSemaphore);
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
 
 void readAcc() {
   TickType_t xLastWakeTime;
-  const TickType_t xFrequency = 10 / portTICK_PERIOD_MS; // read acc every 10ms
+  const TickType_t xFrequency = 50 / portTICK_PERIOD_MS; // read acc every 10ms
 
   xLastWakeTime = xTaskGetTickCount();
+  
   for(;;){
-    if (xSemaphoreTake (dataSemaphore, 1) == pdTRUE) {
+    //Serial.println(uxSemaphoreGetCount(dataSemaphore));
+    xSemaphoreTake(dataSemaphore, portMAX_DELAY);
       processAcc();
       ACCMessageFormat();
       Serial.println("Read ACC");
       xSemaphoreGive(dataSemaphore);
-    }
+    
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
@@ -267,11 +269,11 @@ void readVI() {
 
   xLastWakeTime = xTaskGetTickCount();
   for(;;){
-    if (xSemaphoreTake (dataSemaphore, 1) == pdTRUE) {
+    //xSemaphoreTake(dataSemaphore, portMAX_DELAY);
       processPower();
       Serial.println("Read power!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      xSemaphoreGive(dataSemaphore);
-    }
+      //xSemaphoreGive(dataSemaphore);
+    //}
     vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
@@ -370,12 +372,19 @@ void setup() {
   Serial1.begin(115200);
   Serial.println("Test test");
 
+  dataSemaphore = xSemaphoreCreateBinary();
+ 
   setupACC();
   connectToPi();
-
-  xTaskCreate(sendToPi, "Sending data packets", 400, NULL, 3, NULL);
-  xTaskCreate(readAcc, "Read accelerometer values", 400, NULL, 2, NULL);
-  xTaskCreate(readVI, "Read voltage, current and calculate power", 400, NULL, 1, NULL);
+  if(dataSemaphore != NULL){
+    Serial.println("INSIDEEEEEEEEEEEEEEEEEEEEEEE");
+    xTaskCreate(sendToPi, "Sending data packets", 400, NULL, 3, NULL);
+    xTaskCreate(readAcc, "Read accelerometer values", 400, NULL, 2, NULL);
+    xTaskCreate(readVI, "Read voltage, current and calculate power", 400, NULL, 1, NULL);
+    xSemaphoreGive(dataSemaphore);
+    //Serial.println(uxSemaphoreGetCount(dataSemaphore));
+    vTaskStartScheduler();    
+  }
 }
 
 void loop() {
