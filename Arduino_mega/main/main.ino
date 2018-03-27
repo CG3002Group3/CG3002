@@ -93,6 +93,10 @@ void mainTask(void *p){
     if (Serial1.available()) {       // Check if message available
       incomingByte = Serial1.read();    
     }
+    if(incomingByte == 'H'){
+      handShakeFlag = 0;
+      connectToPi();
+    }
     if(incomingByte == 'R'){
       xLastWakeTime = xTaskGetTickCount();
       strcpy(dataBuffer, ""); //clear the dataBuffer
