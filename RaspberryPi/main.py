@@ -115,11 +115,11 @@ class RaspberryPi():
                 if(self.serial_port.inWaiting() > 0):
                     send_flag = True
                     arduino_data = readlineCR(self.serial_port)
-                    #print(arduino_data)
+                    print(arduino_data)
                     if(cs.calc_checksum(arduino_data)):
                         last_comma_index = arduino_data.rfind(",")
                         arduino_data = arduino_data[:last_comma_index] #strip out the checksum
-                        arduino_data_list = arduino_data.split("\n")[:-1]
+                        arduino_data_list = arduino_data.split("\n")[:-1] #split into 4 rows of samples
                         for item in arduino_data_list:
                             data.sample_queue.appendleft(item)
                     
