@@ -16,7 +16,7 @@ testing_samples = 1
 
 def readlineCR(port): 
     rv="" 
-    while True: 
+    while True:
         ch=port.read() 
         rv+=ch 
         if ch=='\r': 
@@ -52,8 +52,8 @@ class Data():
 class RaspberryPi():
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.test_counter = 0
         self.isHandshakeDone = False
+        self.result_queue = deque([], 3)
 
     def connectToServer(self):
         IPAddress = sys.argv[1]
@@ -66,6 +66,19 @@ class RaspberryPi():
         print("Port Open!")
         self.serial_port.reset_input_buffer()
         self.serial_port.reset_output_buffer()
+        
+    def retrieve_data(self, data, arduino_data):
+    #Extract the 3 values and calculate the cumulative power:
+        last_comma_index = arduino_data.rfind(",")
+        data.power = arduino_data[last_comma_index+1:]#save the power
+        arduino_data = arduino_data[:last_comma_index]#strip out the power
+        last_comma_index = arduino_data.rfind(",")
+        data.current = arduino_data[last_comma_index+1:] #save the current
+        arduino_data = arduino_data[:last_comma_index]#strip out the current
+        last_comma_index = arduino_data.rfind(",")
+        data.voltage = arduino_data[last_comma_index+1:] #save the voltage
+        arduino_data = arduino_data[:last_comma_index]#strip out the voltage
+        data.cumpower += float(data.power)
 
     def run(self):
         try:
@@ -115,18 +128,28 @@ class RaspberryPi():
                 if(self.serial_port.inWaiting() > 0):
                     send_flag = True
                     arduino_data = readlineCR(self.serial_port)
-                    print(arduino_data)
-                    if(cs.calc_checksum(arduino_data)):
+                    #print(arduino_data)
+                    
+                    if(cs.calc_checksum(arduino_data)): #if checksum is correct
                         last_comma_index = arduino_data.rfind(",")
                         arduino_data = arduino_data[:last_comma_index] #strip out the checksum
                         arduino_data_list = arduino_data.split("\n")[:-1] #split into 4 rows of samples
                         for item in arduino_data_list:
                             data.sample_queue.appendleft(item)
+                        
+                        self.retrieve_data(data, arduino_data)
                     
                     if(len(data.sample_queue) == 20):
-                        predict.predict_data(data.sample_queue)
+                        self.result_queue.appendleft(predict.predict_data(data.sample_queue))
+                        #print(list(self.result_queue))
                         data.sample_queue.clear()
                     
+                    if(len(list(self.result_queue)) == 3 and len(set(list(self.result_queue))) == 1):
+                        predictedMove = (list(self.result_queue)[0])
+                        self.result_queue.clear()
+                        if(predictedMove != "Idle"):
+                            data.sendData(predictedMove)
+                        
             #test communication with server.
 ##          while(True):
 ##              name = raw_input("What is the dance move?")

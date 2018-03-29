@@ -2,7 +2,7 @@ from sklearn.externals import joblib
 import numpy as np
 import time
 
-move = ["WTF", "Wavehand", "Jump", "Frontback", "Turnclap", "Window"]
+move = ["Idle", "wavehand", "jump", "frontback", "turnclap", "window"]
 clf = joblib.load('v0.4.pkl')
 
 def predict_data(data_set):
@@ -19,6 +19,8 @@ def predict_data(data_set):
     x = np.append(mean[0:12], [variance[0:12], median[0:12]]).tolist()
     x = np.array(x).reshape(1,-1)
     prev_time = time.time()
-    print(move[int(clf.predict(x)[0])] + " in " + str(time.time() - prev_time) + "s")
+    #print(move[int(clf.predict(x)[0])] + " in " + str(time.time() - prev_time) + "s")
+    
+    return move[int(clf.predict(x)[0])]
 
 #predict_data(["1,2,3,4,5,3,1,2,3,4,5,3,10,11,13", "1,2,3,3,3,3,1,2,3,4,5,3,10,11,12"])
