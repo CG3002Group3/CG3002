@@ -91,12 +91,16 @@ void mainTask(void *p){
   xLastWakeTime = xTaskGetTickCount();
   for(;;){
     if (Serial1.available()) {       // Check if message available
-      incomingByte = Serial1.read();    
+      incomingByte = Serial1.read();
+      Serial.print("Incoming byte is: ");
+      Serial.println(char(incomingByte));
     }
     if(incomingByte == 'H'){ // Reconnect with the Rpi
+      Serial.println("Reconnecting!");
       handShakeFlag = 0;
       ackFlag = 0;
       connectToPi();
+      incomingByte = 0;
     }
     if(incomingByte == 'R'){
       xLastWakeTime = xTaskGetTickCount();
@@ -121,7 +125,8 @@ void mainTask(void *p){
       checkSum2 = (int)checkSum;
       itoa(checkSum2, checksumChar, 10);
       strcat(dataBuffer, ","); 
-      strcat(dataBuffer, checksumChar);
+      strcat(dataBuffer, checksumChar); //add checksum
+      strcat(dataBuffer, "\r"); //add breaking character
 
       len = strlen(dataBuffer);
 
@@ -129,6 +134,7 @@ void mainTask(void *p){
       for (int j = 0; j < len + 1; j++) {
         Serial1.write(dataBuffer[j]);
       }
+      //Serial.println("message sent");
       incomingByte = 0;
       checkSum = 0;
     }
