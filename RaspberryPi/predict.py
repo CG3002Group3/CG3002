@@ -2,7 +2,7 @@ from sklearn.externals import joblib
 import numpy as np
 import time
 
-move = ["Idle", "wavehand", "jump", "frontback", "turnclap", "window"]
+move = ["Idle", "wavehands", "jump", "frontback", "turnclap", "windowcleaning"]
 clf = joblib.load('v0.4.pkl')
 
 def predict_data(data_set):

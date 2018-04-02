@@ -10,9 +10,9 @@ import base64
 import checksum as cs
 import predict as predict
 
-useServer = 1
-collect_test_data = 0
-testing_samples = 1
+useServer = 0
+collect_test_data = 1
+testing_samples = 0
 
 def readlineCR(port): 
     rv="" 
@@ -53,7 +53,7 @@ class RaspberryPi():
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.isHandshakeDone = False
-        self.result_queue = deque([], 3)
+        self.result_queue = deque([], 2)
 
     def connectToServer(self):
         IPAddress = sys.argv[1]
@@ -119,6 +119,7 @@ class RaspberryPi():
                     send_flag = True
                     cs.calc_checksum(arduino_data)
             
+            i=0
             #Read and Predict the results
             while(testing_samples):
                 if (send_flag == True):
@@ -140,16 +141,17 @@ class RaspberryPi():
                         self.retrieve_data(data, arduino_data)
                     
                     if(len(data.sample_queue) == 20):
-                        self.result_queue.appendleft(predict.predict_data(data.sample_queue))
-                        #print(list(self.result_queue))
-                        data.sample_queue.clear()
+                        if (i % 2 == 1):
+                            self.result_queue.appendleft(predict.predict_data(data.sample_queue))
+                            #print(list(self.result_queue))
+                            data.sample_queue.clear()
                     
-                    if(len(list(self.result_queue)) == 3 and len(set(list(self.result_queue))) == 1):
+                    if(len(list(self.result_queue)) == 2 and len(set(list(self.result_queue))) == 1):
                         predictedMove = (list(self.result_queue)[0])
                         self.result_queue.clear()
                         if(predictedMove != "Idle"):
                             data.sendData(predictedMove)
-                        
+                    i+=1
             #test communication with server.
 ##          while(True):
 ##              name = raw_input("What is the dance move?")
