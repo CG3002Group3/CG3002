@@ -53,7 +53,7 @@ class RaspberryPi():
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.isHandshakeDone = False
-        self.result_queue = deque([], 2)
+        self.result_queue = deque([], 3)
 
     def connectToServer(self):
         IPAddress = sys.argv[1]
@@ -146,7 +146,7 @@ class RaspberryPi():
                             #print(list(self.result_queue))
                             data.sample_queue.clear()
                     
-                    if(len(list(self.result_queue)) == 2 and len(set(list(self.result_queue))) == 1):
+                    if(len(list(self.result_queue)) == 3 and len(set(list(self.result_queue))) == 1):
                         predictedMove = (list(self.result_queue)[0])
                         self.result_queue.clear()
                         if(predictedMove != "Idle"):
