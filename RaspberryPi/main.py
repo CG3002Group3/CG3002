@@ -54,6 +54,9 @@ class RaspberryPi():
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.isHandshakeDone = False
         self.result_queue = deque([], 3)
+        
+        self.prev_data_time = time.time()
+        self.current_data_time = time.time()
 
     def connectToServer(self):
         IPAddress = sys.argv[1]
@@ -78,7 +81,11 @@ class RaspberryPi():
         last_comma_index = arduino_data.rfind(",")
         data.voltage = arduino_data[last_comma_index+1:] #save the voltage
         arduino_data = arduino_data[:last_comma_index]#strip out the voltage
-        data.cumpower += float(data.power)
+        
+        self.current_data_time = time.time()
+        data.cumpower += float(data.power) * (self.current_data_time - self.prev_data_time)
+        self.prev_data_time = self.current_data_time
+
 
     def run(self):
         try:
