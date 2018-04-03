@@ -3,7 +3,7 @@ import numpy as np
 import time
 
 move = ["Idle", "wavehands", "jump", "frontback", "turnclap", "windowcleaning"]
-clf = joblib.load('v0.4.pkl')
+clf = joblib.load('v0.5.pkl')
 
 def predict_data(data_set):
     data_array = [row.split(',') for row in list(data_set)]

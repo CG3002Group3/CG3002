@@ -29,7 +29,7 @@ def main():
     analyze(clf, data)
 
     # Save model in a file
-    joblib.dump(clf, 'v0.4.pkl')
+    joblib.dump(clf, 'v0.5.pkl')
 
 def analyze(clf, data):
     """
