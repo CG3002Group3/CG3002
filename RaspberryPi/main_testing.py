@@ -29,7 +29,8 @@ class Data():
         self.voltage = 0 
         self.current = 0 
         self.power = 0  #voltage * current
-        self.cumpower=0
+        self.cumpower = 0
+
         self.sock = socket
         self.sample_queue = deque([], 20)
 
@@ -57,6 +58,9 @@ class RaspberryPi():
         
         self.prev_data_time = time.time()
         self.current_data_time = time.time()
+        self.start_time = time.time()
+        
+        self.prevpower = 0
 
     def connectToServer(self):
         IPAddress = sys.argv[1]
@@ -83,9 +87,22 @@ class RaspberryPi():
         arduino_data = arduino_data[:last_comma_index]#strip out the voltage
         
         self.current_data_time = time.time()
-        data.cumpower += float(data.power) * (self.current_data_time - self.prev_data_time)
+        
+        print(data.voltage)
+        
+        self.currpower = float(data.power)
+        self.totalpower = (self.currpower + self.prevpower) / 2
+        
+        self.energy = self.totalpower * (self.current_data_time - self.prev_data_time)
+        self.energyhour = self.energy / 3600
+        data.cumpower += self.energyhour
+        #data.cumpower += float(data.power) * (self.current_data_time - self.prev_data_time)
         self.prev_data_time = self.current_data_time
-
+        #global prevpower
+        self.prevpower = self.currpower
+        print(data.cumpower)
+        print("time taken:")
+        print(self.current_data_time - self.start_time)
 
     def run(self):
         try:
@@ -134,8 +151,8 @@ class RaspberryPi():
                     send_flag = False
                 time.sleep(0.1)
                 if(self.serial_port.inWaiting() > 0):
+                    send_flag = True
                     arduino_data = readlineCR(self.serial_port)
-                    self.serial_port.write('R')
                     #print(arduino_data)
                     
                     if(cs.calc_checksum(arduino_data)): #if checksum is correct

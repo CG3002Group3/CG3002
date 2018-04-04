@@ -3,7 +3,7 @@ import numpy as np
 import time
 
 move = ["Idle", "wavehands", "jump", "frontback", "turnclap", "windowcleaning"]
-clf = joblib.load('v0.5.pkl')
+clf = joblib.load('v0.6.pkl')
 
 def predict_data(data_set):
     data_array = [row.split(',') for row in list(data_set)]
@@ -14,9 +14,9 @@ def predict_data(data_set):
     numpy_data = np.array(data_array)
     mean = np.mean(numpy_data, axis=0)
     variance = np.var(numpy_data, axis=0)
-    median = np.median(numpy_data, axis=0)
-
-    x = np.append(mean[0:12], [variance[0:12], median[0:12]]).tolist()
+    #median = np.median(numpy_data, axis=0)
+    max_array = np.max(numpy_data, axis=0)
+    x = np.append(mean[0:12], [variance[0:12], max_array[0:12]]).tolist()
     x = np.array(x).reshape(1,-1)
     prev_time = time.time()
     #print(move[int(clf.predict(x)[0])] + " in " + str(time.time() - prev_time) + "s")
