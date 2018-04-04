@@ -83,7 +83,7 @@ class RaspberryPi():
         arduino_data = arduino_data[:last_comma_index]#strip out the voltage
         
         self.current_data_time = time.time()
-        data.cumpower += float(data.power) * (self.current_data_time - self.prev_data_time)
+        data.cumpower += float(data.power) * (self.current_data_time - self.prev_data_time) / 3600.0 
         self.prev_data_time = self.current_data_time
 
 
