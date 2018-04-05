@@ -80,8 +80,6 @@ def get_data():
             mean = np.mean(numpy_interval, axis=0)
             variance = np.var(numpy_interval, axis=0)
             max_peak = np.max(numpy_interval, axis=0)
-            # Overkill with more features
-            #median = np.median(numpy_interval, axis=0)
             if (mean[12] == 0 or mean[12] == 1 or mean[12] == 2 or mean[12] == 3 or mean[12] == 4 or mean[12] == 5 or mean[12] == 6):
                 x.append(np.append(mean[0:12], [variance[0:12], max_peak[0:12]]).tolist())
                 y.append(mean[12])
