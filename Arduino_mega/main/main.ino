@@ -8,26 +8,24 @@
 #endif
 
 #define STACK_SIZE 200
-#define OUTPUT_READABLE_ACCELGYRO
+//#define OUTPUT_READABLE_ACCELGYRO //uncomment to print the values read from the accelerometers
 #define SAMPLE_SIZE 4
 
 MPU6050 accelgyro1(0x68);
 MPU6050 accelgyro2(0x69);
 
 // Constants
-const int SENSOR_PIN = A1;  // Input pin for measuring Vout
-const float RS = 0.1;          // Shunt resistor value (in ohms)
+const int VOLT_PIN = A0;    // Input pin for measuring Voltage
+const int CURRENT_PIN = A1;    // Input pin for measuring Current
+const float RS = 0.1;    // Shunt resistor value (in ohms)
 const int VOLTAGE_REF = 5;  // Reference voltage for analog read
 
 // Global Variables
-float currSensor = 0;   // Variable to store value from analog read
-float voltSensor = 0;
-float current = 0;       // Calculated current value from current sensor
-float power = 0;  // Calculated Power Value
-float energy = 0;
-unsigned long prev_time, diff_time;
-unsigned long curr_time;
+float currSensor = 0;    // Variable to store value from voltage read
+float voltSensor = 0;    // Variable to store value from current read
+float power = 0;    // Calculated Power Value
 
+// Handshake Variables
 int handShakeFlag = 0;
 int ackFlag = 0;
 
@@ -55,6 +53,7 @@ int checkSum = 0;
 int checkSum2;
 char checksumChar[4];
 
+// Method to carry out a handshake with Raspberry Pi
 void connectToPi() {
   //receive Handshake from Rpi
   while (handShakeFlag == 0) {
@@ -92,10 +91,10 @@ void mainTask(void *p){
   for(;;){
     if (Serial1.available()) {       // Check if message available
       incomingByte = Serial1.read();
-      Serial.print("Incoming byte is: ");
-      Serial.println(char(incomingByte));
+      //Serial.print("Incoming byte is: ");
+      //Serial.println(char(incomingByte));
     }
-    if(incomingByte == 'H'){ // Reconnect with the Rpi
+    if(incomingByte == 'H'){ // Reconnect with the Rpi if it disconnects
       Serial.println("Reconnecting!");
       handShakeFlag = 0;
       ackFlag = 0;
@@ -109,9 +108,10 @@ void mainTask(void *p){
       processPower();
       
       for (int i = 0; i < SAMPLE_SIZE; i++) {
+        strcat(dataBuffer, "\n");
         processAcc();
         ACCMessageFormat();
-        vTaskDelayUntil(&xLastWakeTime, (50 / portTICK_PERIOD_MS)); // read acc every 10ms
+        vTaskDelayUntil(&xLastWakeTime, (50 / portTICK_PERIOD_MS)); // read acc every 50ms
       }
 
       len = strlen(dataBuffer);
@@ -134,12 +134,13 @@ void mainTask(void *p){
       for (int j = 0; j < len + 1; j++) {
         Serial1.write(dataBuffer[j]);
       }
-      //Serial.println("message sent");
+
       incomingByte = 0;
       checkSum = 0;
     }
   }
 }
+
 void processAcc(){
     // read raw accel/gyro measurements from device
     //accelgyro1.getMotion6(&ax1, &ay1, &az1, &gx1, &gy1, &gz1);
@@ -200,6 +201,7 @@ void processAcc(){
     #endif
 }
 
+// Formats the data to send to the Raspberry Pi in a String
 void ACCMessageFormat(){
   char buffer[100];
   // ACC 1
@@ -255,39 +257,27 @@ void ACCMessageFormat(){
   strcat(dataBuffer, ",");
   powerChar = dtostrf(power, 3, 2, buffer);
   strcat(dataBuffer, powerChar);
-  strcat(dataBuffer, "\n");
+  //strcat(dataBuffer, "\n");
 }
 
 void processPower(){
-  prev_time = micros();
-  voltSensor = analogRead(A0);
-  currSensor = analogRead(A1);
+  voltSensor = analogRead(VOLT_PIN);
+  currSensor = analogRead(CURRENT_PIN);
   voltSensor = ((voltSensor * 5) / 1023) * 2;  //278.333333 = V * R1 / R1 + R2
   currSensor = ((currSensor * 5) / 1023);
   power = voltSensor * currSensor;
-
-  Serial.print(diff_time);
-  Serial.println(" *");
   
-  Serial.print("Voltage: ");
-  Serial.print(voltSensor);
-  Serial.println(" V");
+  // Serial.print("Voltage: ");
+  // Serial.print(voltSensor);
+  // Serial.println(" V");
 
-  Serial.print("Current: ");
-  Serial.print(currSensor);
-  Serial.println(" A");
+  // Serial.print("Current: ");
+  // Serial.print(currSensor);
+  // Serial.println(" A");
 
-  Serial.print("Power: ");
-  Serial.print(power);
-  Serial.println(" W");
-
-  curr_time = micros();
-  diff_time = curr_time - prev_time;
-  energy += power * diff_time / 1000000;
-  Serial.print("Energy: ");
-  Serial.print(energy);
-  Serial.println(" J");
-  Serial.println(" ");
+  // Serial.print("Power: ");
+  // Serial.print(power);
+  // Serial.println(" W");
 }
 
 void setup() {
