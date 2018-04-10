@@ -314,12 +314,12 @@ void setup() {
   Serial.print(accelgyro1.getZGyroOffset()); Serial.print("\t"); // 0
   Serial.print("\n");
 
-  accelgyro1.setXAccelOffset(-4155);
-  accelgyro1.setYAccelOffset(346);
-  accelgyro1.setZAccelOffset(1316);
-  accelgyro1.setXGyroOffset(-7);
-  accelgyro1.setYGyroOffset(-38);
-  accelgyro1.setZGyroOffset(25);
+  accelgyro1.setXAccelOffset(-3902);
+  accelgyro1.setYAccelOffset(-1052);
+  accelgyro1.setZAccelOffset(1661);
+  accelgyro1.setXGyroOffset(49);
+  accelgyro1.setYGyroOffset(-32);
+  accelgyro1.setZGyroOffset(23);
 
   Serial.println("Accelgyro2: ");
   Serial.print(accelgyro2.getXAccelOffset()); Serial.print("\t"); // -76
