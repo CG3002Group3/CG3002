@@ -141,9 +141,12 @@ class RaspberryPi():
                     if(cs.calc_checksum(arduino_data)): #if checksum is correct
                         last_comma_index = arduino_data.rfind(",")
                         arduino_data = arduino_data[:last_comma_index] #strip out the checksum
-                        arduino_data_list = arduino_data.split("\n")[:-1] #split into 4 rows of samples
+                        arduino_data = arduino_data[1:]
+                        arduino_data_list = arduino_data.split("\n") #split into 4 rows of samples
+                        arduino_data_list = [data_unit for data_unit in arduino_data_list if data_unit != '']
+                                                
                         for item in arduino_data_list:
-                            data.sample_queue.appendleft(item)
+                            data.sample_queue.appendleft(item.replace('\n',''))
                         
                         self.retrieve_data(data, arduino_data)
                     
