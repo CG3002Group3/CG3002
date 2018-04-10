@@ -7,7 +7,6 @@ move = ["Idle", "wavehands", "jump", "frontback", "turnclap", "windowcleaning",
 clf = joblib.load('v0.7.pkl')
 
 def predict_data(data_set):
-    print(list(data_set))
     data_array = [row.split(',') for row in list(data_set)]
     data_array = [row[:-3] for row in data_array]
     data_array = [[float(number.replace('\x00','').replace('\n','')) for number in row] for row in data_array]

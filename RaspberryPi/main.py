@@ -10,9 +10,9 @@ import base64
 import checksum as cs
 import predict as predict
 
-useServer = 1
-collect_test_data = 0
-testing_samples = 1
+useServer = 0
+collect_test_data = 1
+testing_samples = 0
 
 def readlineCR(port): 
     rv="" 
