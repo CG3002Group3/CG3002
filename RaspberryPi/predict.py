@@ -4,7 +4,7 @@ import time
 
 move = ["Idle", "wavehands", "jump", "frontback", "turnclap", "windowcleaning",
         "numbersix", "jumpleftright", "sidestep", "squatturnclap", "window360", "logout"]
-clf = joblib.load('v0.9fft.pkl')
+clf = joblib.load('v0.91fft.pkl')
 
 def predict_data(data_set):
     data_array = [row.split(',') for row in list(data_set)]
