@@ -34,7 +34,7 @@ def main():
     analyze(clf, data)
 
     # Save model in a file
-    joblib.dump(clf, 'v0.8fft.pkl')
+    joblib.dump(clf, 'v0.9fft.pkl')
 
 def analyze(clf, data):
     """
@@ -61,7 +61,7 @@ def get_data():
     x = []
     z = []
     # Get data from json file
-    with open('all2.csv', 'rb') as csvfile:
+    with open('all4.csv', 'rb') as csvfile:
         acc_reader = csv.reader(csvfile, delimiter=',')
         i = 0
         for row in acc_reader:
