@@ -34,7 +34,7 @@ def main():
     analyze(clf, data)
 
     # Save model in a file
-    joblib.dump(clf, 'v0.8.pkl')
+    joblib.dump(clf, 'v0.8fft.pkl')
 
 def analyze(clf, data):
     """
