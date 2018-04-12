@@ -101,7 +101,7 @@ def get_data():
         
             # Overkill with more features
             # median = np.median(numpy_interval, axis=0)
-            if (mean[12] == 0 or mean[12] == 1 or mean[12] == 2 or mean[12] == 3 or mean[12] == 4 or mean[12] == 5 or mean[12] == 6 or mean[12] == 7 or mean[12] == 8 or mean[12] == 9 or mean[12] == 10):
+            if (mean[12] == 0 or mean[12] == 1 or mean[12] == 2 or mean[12] == 3 or mean[12] == 4 or mean[12] == 5 or mean[12] == 6 or mean[12] == 7 or mean[12] == 8 or mean[12] == 9 or mean[12] == 10 or mean[12] == 11):
                 x.append(np.append(mean[0:12], [variance[0:12], offset[0:12], summ[0:12]]).tolist())
                 y.append(mean[12])
 
