@@ -7,6 +7,12 @@ import numpy as np
 import csv
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
+import csv
+import numpy as np
+import pandas as pd
+import numpy as np
+from numpy import fft, sin, pi
+from scipy import arange
 
 
 def main():
@@ -81,10 +87,22 @@ def get_data():
             max_peak = np.max(numpy_interval, axis=0)
             min_peak = np.min(numpy_interval, axis=0)
             offset = max_peak - min_peak
+            summ = np.array([])
+            transposedcsv = np.transpose(numpy_interval)
+
+            for row in transposedcsv:
+                n = len(row) # length of the signal
+                Y = np.fft.fft(row) # fft computing and normalization
+                Y = Y[range(int(n/2))]
+                maxVal = np.amax(Y)
+
+                indexOfMax = np.where(Y == maxVal)
+                summ = np.append(summ, indexOfMax)
+        
             # Overkill with more features
             # median = np.median(numpy_interval, axis=0)
             if (mean[12] == 0 or mean[12] == 1 or mean[12] == 2 or mean[12] == 3 or mean[12] == 4 or mean[12] == 5 or mean[12] == 6 or mean[12] == 7 or mean[12] == 8 or mean[12] == 9 or mean[12] == 10):
-                x.append(np.append(mean[0:12], [variance[0:12], offset[0:12]]).tolist())
+                x.append(np.append(mean[0:12], [variance[0:12], offset[0:12], summ[0:12]]).tolist())
                 y.append(mean[12])
 
         # Create data for training  
