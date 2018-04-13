@@ -26,7 +26,6 @@ class server:
         self.actions = ['wavehands', 'wavehands', 'wavehands', 'wavehands',
                         'jump', 'jump', 'jump', 'jump',
                         'frontback', 'frontback', 'frontback', 'frontback',
-                        'frontback', 'frontback', 'frontback', 'frontback', 
                         'turnclap', 'turnclap', 'turnclap', 'turnclap',
                         'windowcleaning', 'windowcleaning', 'windowcleaning', 'windowcleaning',
                         'numbersix', 'numbersix', 'numbersix', 'numbersix',
