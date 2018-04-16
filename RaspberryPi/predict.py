@@ -3,8 +3,8 @@ import numpy as np
 import time
 
 move = ["Idle", "wavehands", "jump", "frontback", "turnclap", "windowcleaning",
-        "numbersix", "jumpleftright", "sidestep", "squatturnclap", "window360", "logout"]
-clf = joblib.load('v_ultomato.pkl')
+        "numbersix", "jumpleftright", "sidestep", "squatturnclap", "windowcleaner360", "logout"]
+clf = joblib.load('v_ultomato_v2.pkl')
 
 def predict_data(data_set):
     data_array = [row.split(',') for row in list(data_set)]
