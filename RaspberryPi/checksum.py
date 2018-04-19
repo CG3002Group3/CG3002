@@ -1,7 +1,7 @@
 import csv
 
 def save_data(data_set):
-    my_file = open('exit.csv', 'a+')
+    my_file = open('test.csv', 'a+')
     my_file.write(data_set)
 
 def calc_checksum(data_set):
